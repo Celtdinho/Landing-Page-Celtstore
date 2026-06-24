@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Celt Store - Top Up Game</title>
+
+    <!-- Tailwind + Font -->
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===== RESET & GLOBAL ===== */
+        * {
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+        body {
+            background: #050816;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* ===== GLOW EFFECTS ===== */
+        .glow {
+            box-shadow: 0 0 30px rgba(99, 102, 241, .5);
+        }
+        .glow-text {
+            text-shadow: 0 0 30px rgba(129, 140, 248, .8);
+        }
+        .gradient-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4);
+        }
+        .card-glass {
+            backdrop-filter: blur(14px);
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .1);
+        }
+
+        /* ===== ANIMASI FLOAT ===== */
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-14px);
+            }
+        }
+
+        /* ===== FADE-UP ===== */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all .8s ease;
+        }
+        .fade-up.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== BLOB BACKGROUND ===== */
+        .blob {
+            position: fixed;
+            border-radius: 9999px;
+            filter: blur(80px);
+            opacity: .3;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ============================================================ */
+        /* ===== GAME CARD DENGAN WATERMARK ICON DI BACKGROUND ===== */
+        /* ============================================================ */
+        .game-card {
+            position: relative;
+            overflow: hidden;
+            height: 220px;
+
+            border-radius: 20px;
+
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+
+            padding: 20px;
+
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+
+            transition: all .4s cubic-bezier(.25,.46,.45,.94);
+
+            border: 1px solid rgba(255,255,255,.08);
+        }
+        .game-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: rgba(255, 255, 255, .3);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, .6);
+        }
+
+        .game-card .game-name {
+            font-weight: 700;
+            font-size: 1.05rem;
+            letter-spacing: .3px;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, .8);
+            position: relative;
+            z-index: 2;
+        }
+        /* Overlay gelap biar teks tetap terbaca */
+        .game-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+
+            background:
+            linear-gradient(
+                to top,
+                rgba(0,0,0,.9),
+                rgba(0,0,0,.25)
+            );
+
+            border-radius: 20px;
+            z-index: 1;
+        }
+        .game-card>* {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ===== BACKGROUND GRADASI PER GAME (tetap dipertahankan) ===== */
+        .game-ml{
+            background-image:url('assets/MLBB-Icon.png');
+        }
+
+        .game-ff{
+            background-image:url('assets/FreeFire-Icon.png');
+        }
+
+        .game-valorant{
+            background-image:url('assets/Valorant-Icon.png');
+        }
+
+        .game-genshin{
+            background-image:url('assets/GenshinImpact-Icon.png');
+        }
+
+        .game-roblox{
+            background-image:url('assets/ROBLOX-Icon.png');
+        }
+
+        .game-pubg{
+            background-image:url('assets/PubgMobile-Icon.png');
+        }
+
+        .game-hok{
+            background-image:url('assets/HOK-Icon.png');
+        }
+
+        .game-steam{
+            background-image:url('assets/Steam-Icon.png');
+        }
+
+        /* ===== NAVBAR LOGO ===== */
+        .logo-box{
+            width:64px;
+            height:64px;
+
+            border-radius:18px;
+
+            background:
+            linear-gradient(
+                135deg,
+                rgba(99,102,241,.15),
+                rgba(6,182,212,.15)
+            );
+
+            border:1px solid rgba(255,255,255,.1);
+
+            backdrop-filter:blur(12px);
+
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        .nav-logo-img{
+            width:46px;
+            height:46px;
+            object-fit:contain;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 640px) {
+            .game-card .watermark {
+                font-size: 90px;
+                right: -5px;
+                bottom: -10px;
+            }
+            .game-card .game-emoji {
+                font-size: 2rem;
+            }
+            .game-card .game-name {
+                font-size: .85rem;
+            }
+            .game-card {
+                padding: 1rem 0.8rem;
+                min-height: 110px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== BLOBS ===== -->
+    <div class="blob bg-indigo-500 w-72 h-72 top-10 -left-20"></div>
+    <div class="blob bg-cyan-500 w-72 h-72 bottom-10 -right-20"></div>
+
+    <!-- ============================================================ -->
+    <!-- NAVBAR -->
+    <!-- ============================================================ -->
+    <nav class="fixed w-full z-50 backdrop-blur-xl bg-black/40 border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+
+            <!-- LOGO -->
+            <a href="#" class="flex items-center gap-3">
+
+                <div class="logo-box">
+                    <img
+                        src="assets/celt-logo.png"
+                        alt="Celt Store"
+                        class="nav-logo-img"
+                    >
+                </div>
+
+                <div>
+                    <h1 class="font-bold text-xl text-white">
+                        Celt Store
+                    </h1>
+
+                    <p class="text-xs text-cyan-400">
+                        Top Up & Chatbot Service
+                    </p>
+                </div>
+
+            </a>
+
+            <!-- MENU -->
+            <div class="hidden md:flex gap-8 text-sm font-medium">
+                <a href="#fitur" class="hover:text-cyan-400 transition">Fitur</a>
+                <a href="#game" class="hover:text-cyan-400 transition">Game</a>
+                <a href="#cara" class="hover:text-cyan-400 transition">Cara Kerja</a>
+                <a href="#testimoni" class="hover:text-cyan-400 transition">Testimoni</a>
+            </div>
+
+            <!-- CTA -->
+            <a href="#cta" class="gradient-primary px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/30 hover:scale-105 transition">
+                Mulai
+            </a>
+        </div>
+    </nav>
+
+    <!-- ============================================================ -->
+    <!-- HERO -->
+    <!-- ============================================================ -->
+    <section class="min-h-screen flex items-center px-6 pt-24 relative z-10">
+        <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+
+            <!-- KIRI -->
+            <div>
+                <span class="inline-block px-4 py-2 rounded-full card-glass text-sm font-medium">
+                    Chatbot Top Up Otomatis 24/7
+                </span>
+                <h1 class="text-5xl md:text-7xl font-black mt-6 leading-[1.1]">
+                    Top Up Game
+                    <span class="text-indigo-400 glow-text">Lebih Cepat</span>
+                    Dengan Chatbot
+                </h1>
+                <p class="text-gray-300 mt-6 text-lg max-w-lg">
+                    Pesan diamond, UC, Robux, Genesis Crystal & berbagai kebutuhan game
+                    hanya dalam hitungan detik via chatbot otomatis.
+                </p>
+                <div class="flex flex-wrap gap-4 mt-8">
+                    <a href="#cta" class="gradient-primary px-8 py-4 rounded-xl font-bold glow hover:scale-105 transition">
+                        Coba Demo
+                    </a>
+                    <a href="#game" class="border border-indigo-500 px-8 py-4 rounded-xl font-medium hover:bg-indigo-500/10 transition">
+                        Lihat Game
+                    </a>
+                </div>
+                <div class="flex gap-10 mt-10">
+                    <div>
+                        <h2 class="text-3xl font-bold text-indigo-300">10K+</h2>
+                        <p class="text-gray-400 text-sm">Pesanan</p>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-cyan-300">24/7</h2>
+                        <p class="text-gray-400 text-sm">Online</p>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-green-300">99%</h2>
+                        <p class="text-gray-400 text-sm">Success Rate</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KANAN (mockup chat) -->
+            <div class="animate-float">
+                <div class="card-glass rounded-3xl p-6 glow border border-indigo-500/30">
+                    <div class="space-y-4">
+                        <div class="bg-indigo-500/30 p-4 rounded-xl">🤖 Halo, mau top up game apa?</div>
+                        <div class="bg-cyan-500/30 p-4 rounded-xl text-right">Mobile Legends</div>
+                        <div class="bg-indigo-500/30 p-4 rounded-xl">Pilih paket diamond yang tersedia.</div>
+                        <div class="bg-cyan-500/30 p-4 rounded-xl text-right">86 Diamond</div>
+                        <div class="bg-green-500/30 p-4 rounded-xl border border-green-400/30">✅ Pesanan berhasil diproses.</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- FITUR -->
+    <!-- ============================================================ -->
+    <section id="fitur" class="py-24 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-center text-4xl font-black mb-14">
+                Fitur <span class="text-indigo-400 glow-text">Unggulan</span>
+            </h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="card-glass p-6 rounded-2xl fade-up text-center hover:border-indigo-500/40 transition">
+                    <div class="text-4xl mb-3">🤖</div>
+                    <h3 class="text-xl font-bold">Smart Bot</h3>
+                    <p class="text-gray-400 mt-2 text-sm">Melayani pelanggan otomatis sepanjang hari.</p>
+                </div>
+                <div class="card-glass p-6 rounded-2xl fade-up text-center hover:border-indigo-500/40 transition">
+                    <div class="text-4xl mb-3">⚡</div>
+                    <h3 class="text-xl font-bold">Auto Order</h3>
+                    <p class="text-gray-400 mt-2 text-sm">Pesanan diproses tanpa admin manual.</p>
+                </div>
+                <div class="card-glass p-6 rounded-2xl fade-up text-center hover:border-indigo-500/40 transition">
+                    <div class="text-4xl mb-3">💳</div>
+                    <h3 class="text-xl font-bold">Auto Payment</h3>
+                    <p class="text-gray-400 mt-2 text-sm">Verifikasi pembayaran otomatis.</p>
+                </div>
+                <div class="card-glass p-6 rounded-2xl fade-up text-center hover:border-indigo-500/40 transition">
+                    <div class="text-4xl mb-3">📈</div>
+                    <h3 class="text-xl font-bold">Tracking</h3>
+                    <p class="text-gray-400 mt-2 text-sm">Pantau status pesanan secara realtime.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- GAME YANG DIDUKUNG (dengan WATERMARK ICON di background) -->
+    <!-- ============================================================ -->
+    <section id="game" class="py-24 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-center text-4xl font-black mb-14">
+                Game Yang <span class="text-cyan-400 glow-text">Didukung</span>
+            </h2>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
+
+                <!-- Mobile Legends -->
+                <div class="game-card game-ml">
+                    <div class="game-name text-white">
+                        Mobile Legends
+                    </div>
+                </div>
+
+                <!-- Free Fire -->
+                <div class="game-card game-ff">
+                    <div class="game-name text-white">
+                        Free Fire
+                    </div>
+                </div>
+
+                <!-- Valorant -->
+                <div class="game-card game-valorant">
+                    <div class="game-name text-white">
+                        Valorant
+                    </div>
+                </div>
+
+                <!-- Genshin Impact -->
+                <div class="game-card game-genshin">
+                    <div class="game-name text-white">
+                        Genshin Impact
+                    </div>
+                </div>
+
+                <!-- Roblox -->
+                <div class="game-card game-roblox">
+                    <div class="game-name text-white">
+                        Roblox
+                    </div>
+                </div>
+
+                <!-- PUBG Mobile -->
+                <div class="game-card game-pubg">
+                    <div class="game-name text-white">
+                        PUBG Mobile
+                    </div>
+                </div>
+
+                <!-- Honor Of Kings -->
+                <div class="game-card game-hok">
+                    <div class="game-name text-white">
+                        Honor Of Kings
+                    </div>
+                </div>
+
+                <!-- Steam Wallet -->
+                <div class="game-card game-steam">
+                    <div class="game-name text-white">
+                        Steam Wallet
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- CARA KERJA -->
+    <!-- ============================================================ -->
+    <section id="cara" class="py-24 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-center text-4xl font-black mb-14">
+                Cara <span class="text-purple-400 glow-text">Kerja</span>
+            </h2>
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="card-glass p-6 rounded-2xl text-center fade-up">
+                    <div class="text-5xl font-black text-indigo-400">1</div>
+                    <h3 class="font-bold mt-2">Pilih Game</h3>
+                    <p class="text-gray-400 text-sm">Pilih game favoritmu.</p>
+                </div>
+                <div class="card-glass p-6 rounded-2xl text-center fade-up">
+                    <div class="text-5xl font-black text-cyan-400">2</div>
+                    <h3 class="font-bold mt-2">Masukkan UID</h3>
+                    <p class="text-gray-400 text-sm">Input ID akun game-mu.</p>
+                </div>
+                <div class="card-glass p-6 rounded-2xl text-center fade-up">
+                    <div class="text-5xl font-black text-purple-400">3</div>
+                    <h3 class="font-bold mt-2">Bayar</h3>
+                    <p class="text-gray-400 text-sm">Transfer via QRIS atau bank.</p>
+                </div>
+                <div class="card-glass p-6 rounded-2xl text-center fade-up">
+                    <div class="text-5xl font-black text-green-400">4</div>
+                    <h3 class="font-bold mt-2">Top Up Masuk</h3>
+                    <p class="text-gray-400 text-sm">Diamond / item langsung masuk.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- TESTIMONI -->
+    <!-- ============================================================ -->
+    <section id="testimoni" class="py-24 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-center text-4xl font-black mb-14">
+                <span class="text-yellow-400 glow-text">Testimoni</span> Pelanggan
+            </h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="card-glass p-6 rounded-2xl fade-up text-center">
+                    <div class="text-yellow-400 text-xl">⭐⭐⭐⭐⭐</div>
+                    <p class="mt-3 text-gray-200">“Diamond masuk kurang dari 1 menit. Mantap!”</p>
+                    <p class="text-gray-500 text-sm mt-2">— Andi, 22th</p>
+                </div>
+                <div class="card-glass p-6 rounded-2xl fade-up text-center">
+                    <div class="text-yellow-400 text-xl">⭐⭐⭐⭐⭐</div>
+                    <p class="mt-3 text-gray-200">“Bot-nya gampang banget dipakai. Cepet & murah.”</p>
+                    <p class="text-gray-500 text-sm mt-2">— Siti, 19th</p>
+                </div>
+                <div class="card-glass p-6 rounded-2xl fade-up text-center">
+                    <div class="text-yellow-400 text-xl">⭐⭐⭐⭐⭐</div>
+                    <p class="mt-3 text-gray-200">“Top up ML langsung masuk, harga bersaing!”</p>
+                    <p class="text-gray-500 text-sm mt-2">— Rangga, 25th</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- CTA -->
+    <!-- ============================================================ -->
+    <section id="cta" class="py-28 px-6 relative z-10">
+        <div class="max-w-5xl mx-auto text-center card-glass rounded-3xl p-12 glow border border-indigo-500/20">
+            <h2 class="text-4xl md:text-5xl font-black">
+                Siap Top Up <span class="text-indigo-400 glow-text">Tanpa Ribet</span>?
+            </h2>
+            <p class="text-gray-300 mt-4 text-lg">
+                Gunakan chatbot otomatis dan nikmati proses top up 24 jam.
+            </p>
+            <a
+            href="https://wa.me/6285863203747?text=Halo%20Celt%20Store,%20saya%20tertarik%20dengan%20layanan%20topup%20dan%20chatbot"
+            target="_blank"
+            class="inline-block gradient-primary px-10 py-4 rounded-xl mt-8 font-bold glow hover:scale-105 transition">
+
+                Mulai Sekarang
+
+            </a>
+            </a>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- FOOTER -->
+    <!-- ============================================================ -->
+    <footer class="border-t border-white/10 py-8 px-6 text-center text-gray-500 relative z-10">
+        <div class="flex items-center justify-center gap-3 text-sm">
+            <!-- Logo kecil di footer -->
+            <svg viewBox="0 0 100 100" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10" y="10" width="80" height="80" rx="20" fill="url(#logoGrad2)" />
+                <text x="50" y="68" font-size="48" font-weight="900" text-anchor="middle" fill="white" font-family="Poppins, sans-serif">C</text>
+                <defs>
+                    <linearGradient id="logoGrad2" x1="0" y1="0" x2="100" y2="100">
+                        <stop offset="0%" stop-color="#6366f1" />
+                        <stop offset="50%" stop-color="#8b5cf6" />
+                        <stop offset="100%" stop-color="#06b6d4" />
+                    </linearGradient>
+                </defs>
+            </svg>
+            <span>© 2026 <strong class="text-white">Celt Store</strong>. All Rights Reserved.</span>
+        </div>
+        <p class="text-xs text-gray-600 mt-1">Powered by CeltBot — Topup Cepat, Harga Kawan</p>
+    </footer>
+
+    <!-- ============================================================ -->
+    <!-- SCRIPT FADE-UP -->
+    <!-- ============================================================ -->
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('show');
+                }
+            });
+        }, { threshold: .2 });
+
+        document.querySelectorAll('.fade-up').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+
+</body>
+</html>
